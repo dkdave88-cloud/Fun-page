@@ -3,145 +3,330 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fun Game</title>
+<meta name="description" content="A tiny playful quiz page.">
+<title>Baccha Check</title>
 
 <style>
 :root{
+    --bg-start:#fff7ed;
+    --bg-mid:#e0f2fe;
+    --bg-end:#fce7f3;
+    --surface:#ffffff;
+    --text:#172033;
+    --muted:#667085;
     --accent:#ff7a18;
-    --accent2:#ff3d81;
-    --success:#1aa54b;
-    --fail:#d62828;
+    --accent-strong:#ff3d81;
+    --success:#16803c;
+    --fail:#b42318;
+    --border:rgba(23,32,51,.12);
+    --shadow:0 24px 60px rgba(23,32,51,.18);
+}
+
+*{
+    box-sizing:border-box;
 }
 
 body{
-    font-family:-apple-system,BlinkMacSystemFont,system-ui;
-    background:radial-gradient(circle at top,#ffb347,#ff3d81);
     min-height:100vh;
+    min-height:100svh;
     margin:0;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:20px;
+    display:grid;
+    place-items:center;
+    padding:24px;
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:linear-gradient(135deg,var(--bg-start) 0%,var(--bg-mid) 48%,var(--bg-end) 100%);
+}
+
+button{
+    font:inherit;
+}
+
+[hidden]{
+    display:none !important;
+}
+
+.page-shell{
+    width:min(100%,440px);
 }
 
 .card{
     width:100%;
-    max-width:380px;
-    backdrop-filter: blur(14px);
+    overflow:hidden;
+    border:1px solid var(--border);
+    border-radius:8px;
     background:rgba(255,255,255,.92);
-    border-radius:24px;
-    padding:32px 26px;
-    text-align:center;
-    box-shadow:
-      0 18px 40px rgba(0,0,0,.25),
-      inset 0 1px 0 rgba(255,255,255,.6);
-    animation:float .6s ease;
+    box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.8);
+    backdrop-filter:blur(16px);
+    animation:card-in .45s ease both;
 }
 
-@keyframes float{
-    from{opacity:0;transform:translateY(20px) scale(.96)}
-    to{opacity:1;transform:none}
+.card[data-status="success"]{
+    border-color:rgba(22,128,60,.3);
+}
+
+.card[data-status="fail"]{
+    border-color:rgba(180,35,24,.28);
+}
+
+.screen{
+    padding:34px 28px 30px;
+    text-align:center;
+}
+
+.eyebrow{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:28px;
+    margin:0 0 14px;
+    padding:4px 10px;
+    border:1px solid rgba(255,122,24,.25);
+    border-radius:999px;
+    color:#9a3412;
+    background:#fff7ed;
+    font-size:13px;
+    font-weight:700;
+}
+
+h1,
+h2,
+p{
+    margin:0;
+}
+
+h1{
+    font-size:clamp(32px,8vw,44px);
+    line-height:1.02;
+    letter-spacing:0;
 }
 
 h2{
-    margin:10px 0 22px;
-    font-weight:700;
-    letter-spacing:.3px;
+    font-size:clamp(24px,6vw,32px);
+    line-height:1.12;
+    letter-spacing:0;
 }
 
-button{
-    width:100%;
-    padding:16px;
-    margin:12px 0;
-    border:none;
-    border-radius:16px;
+.lede{
+    margin:14px auto 24px;
+    max-width:28ch;
+    color:var(--muted);
     font-size:16px;
-    font-weight:600;
-    cursor:pointer;
-    transition:transform .15s ease, box-shadow .2s ease, background .2s;
+    line-height:1.55;
 }
 
-button:active{
-    transform:scale(.97);
+.options{
+    display:grid;
+    gap:12px;
+    margin-top:24px;
+}
+
+.button{
+    width:100%;
+    min-height:54px;
+    border:1px solid transparent;
+    border-radius:8px;
+    padding:14px 18px;
+    font-size:16px;
+    font-weight:750;
+    cursor:pointer;
+    transition:transform .16s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+}
+
+.button:hover:not(:disabled){
+    transform:translateY(-1px);
+}
+
+.button:active:not(:disabled){
+    transform:translateY(0) scale(.98);
+}
+
+.button:focus-visible{
+    outline:3px solid rgba(255,122,24,.35);
+    outline-offset:3px;
+}
+
+.button:disabled{
+    cursor:not-allowed;
+    opacity:.58;
 }
 
 .primary{
-    background:linear-gradient(135deg,var(--accent),var(--accent2));
-    color:white;
-    box-shadow:0 8px 20px rgba(255,80,120,.45);
+    color:#fff;
+    background:linear-gradient(135deg,var(--accent),var(--accent-strong));
+    box-shadow:0 12px 26px rgba(255,80,120,.32);
+}
+
+.secondary{
+    margin-top:18px;
+    color:#172033;
+    background:#fff;
+    border-color:var(--border);
 }
 
 .option{
-    background:#f2f4ff;
-    color:#1e2a78;
+    color:#1e3a8a;
+    background:#eef4ff;
+    border-color:#d7e3ff;
 }
 
-.option:hover{
-    background:#e3e7ff;
+.option:hover:not(:disabled){
+    background:#e3ecff;
+    box-shadow:0 10px 20px rgba(30,58,138,.08);
 }
 
-.option:disabled{
-    opacity:0.6;
-    cursor:not-allowed;
+.option.is-correct{
+    color:var(--success);
+    background:#ecfdf3;
+    border-color:rgba(22,128,60,.28);
+}
+
+.option.is-wrong{
+    color:var(--fail);
+    background:#fff1f0;
+    border-color:rgba(180,35,24,.24);
 }
 
 .result{
-    margin-top:16px;
+    min-height:28px;
+    margin-top:18px;
     font-size:17px;
-    font-weight:600;
-    min-height:24px;
+    font-weight:750;
+    line-height:1.45;
     transition:color .2s ease;
 }
 
-.success{ color:var(--success); }
-.fail{ color:var(--fail); }
+.result:focus{
+    outline:none;
+}
+
+.success{
+    color:var(--success);
+}
+
+.fail{
+    color:var(--fail);
+}
+
+@keyframes card-in{
+    from{
+        opacity:0;
+        transform:translateY(18px) scale(.98);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+@media (max-width:420px){
+    body{
+        padding:16px;
+    }
+
+    .screen{
+        padding:28px 20px 24px;
+    }
+}
+
+@media (prefers-reduced-motion:reduce){
+    *,
+    *::before,
+    *::after{
+        animation-duration:.01ms !important;
+        animation-iteration-count:1 !important;
+        scroll-behavior:auto !important;
+        transition-duration:.01ms !important;
+    }
+}
 </style>
 </head>
 
 <body>
+<main class="page-shell">
+    <article class="card" id="gameCard" aria-labelledby="gameTitle">
+        <section class="screen" id="startScreen">
+            <p class="eyebrow">Tiny game</p>
+            <h1 id="gameTitle">Baccha Check</h1>
+            <p class="lede">One question. One sweet answer. Choose carefully.</p>
+            <button class="button primary" id="startBtn" type="button">Start</button>
+        </section>
 
-<div class="card">
+        <section class="screen" id="questionScreen" aria-labelledby="questionTitle" hidden>
+            <h2 id="questionTitle" tabindex="-1">Who is my baccha?</h2>
 
-<div id="step1">
-    <button class="primary" id="startBtn">Click Here</button>
-</div>
+            <div class="options" aria-label="Answer choices">
+                <button class="button option" type="button" data-answer="correct">Budbudiyu</button>
+                <button class="button option" type="button" data-answer="wrong">Me</button>
+            </div>
 
-<div id="step2" hidden>
-    <h2>Who is my baccha?</h2>
-    <button class="option" data-answer="correct">Budbudiyu</button>
-    <button class="option" data-answer="wrong">Me</button>
-    <div id="result" class="result" aria-live="polite"></div>
-</div>
-
-</div>
+            <p id="result" class="result" role="status" aria-live="polite" tabindex="-1"></p>
+            <button class="button secondary" id="resetBtn" type="button" hidden>Play again</button>
+        </section>
+    </article>
+</main>
 
 <script>
-const step1 = document.getElementById("step1");
-const step2 = document.getElementById("step2");
+const gameCard = document.getElementById("gameCard");
+const startScreen = document.getElementById("startScreen");
+const questionScreen = document.getElementById("questionScreen");
+const questionTitle = document.getElementById("questionTitle");
 const startBtn = document.getElementById("startBtn");
+const resetBtn = document.getElementById("resetBtn");
 const result = document.getElementById("result");
 const options = document.querySelectorAll(".option");
 
-startBtn.addEventListener("click", () => {
-    step1.style.display = "none";
-    step2.hidden = false;
-});
+function showQuestion(){
+    startScreen.hidden = true;
+    questionScreen.hidden = false;
+    questionTitle.focus({ preventScroll:true });
+}
 
-options.forEach(btn => {
-    btn.addEventListener("click", () => {
-        const isCorrect = btn.dataset.answer === "correct";
-
-        result.textContent = isCorrect
-            ? "🎉 Correct! Budbudiyu is the baccha!"
-            : "😄 Nope — try again!";
-
-        result.className = "result " + (isCorrect ? "success" : "fail");
-
-        // Disable buttons after selection
-        options.forEach(b => b.disabled = true);
+function clearChoices(){
+    options.forEach(option => {
+        option.disabled = false;
+        option.classList.remove("is-correct", "is-wrong");
     });
+}
+
+function resetGame(){
+    gameCard.removeAttribute("data-status");
+    result.textContent = "";
+    result.className = "result";
+    resetBtn.hidden = true;
+    clearChoices();
+    questionScreen.hidden = true;
+    startScreen.hidden = false;
+    startBtn.focus({ preventScroll:true });
+}
+
+function handleAnswer(event){
+    const selectedOption = event.currentTarget;
+    const isCorrect = selectedOption.dataset.answer === "correct";
+
+    selectedOption.classList.add(isCorrect ? "is-correct" : "is-wrong");
+    gameCard.dataset.status = isCorrect ? "success" : "fail";
+    result.className = "result " + (isCorrect ? "success" : "fail");
+
+    if(isCorrect){
+        result.textContent = "Correct! Budbudiyu is the baccha.";
+        options.forEach(option => {
+            option.disabled = true;
+        });
+        resetBtn.hidden = false;
+    }else{
+        result.textContent = "Almost. Try the other answer.";
+        selectedOption.disabled = true;
+    }
+
+    result.focus({ preventScroll:true });
+}
+
+startBtn.addEventListener("click", showQuestion);
+resetBtn.addEventListener("click", resetGame);
+options.forEach(option => {
+    option.addEventListener("click", handleAnswer);
 });
 </script>
-
 </body>
 </html>
