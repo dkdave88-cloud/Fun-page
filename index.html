@@ -3,23 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="A tiny playful quiz page.">
-<title>Baccha Check</title>
+<meta name="description" content="An interactive love quiz for Budi.">
+<title>Budi Love Quiz</title>
 
 <style>
 :root{
-    --bg-start:#fff7ed;
-    --bg-mid:#e0f2fe;
-    --bg-end:#fce7f3;
-    --surface:#ffffff;
-    --text:#172033;
-    --muted:#667085;
-    --accent:#ff7a18;
-    --accent-strong:#ff3d81;
-    --success:#16803c;
+    --bg-one:#fff1f2;
+    --bg-two:#ffe4e6;
+    --bg-three:#fdf2f8;
+    --card:#ffffff;
+    --text:#2f1728;
+    --soft-text:#7c536b;
+    --pink:#ff4d8d;
+    --rose:#e11d48;
+    --purple:#8b5cf6;
+    --success:#11823b;
     --fail:#b42318;
-    --border:rgba(23,32,51,.12);
-    --shadow:0 24px 60px rgba(23,32,51,.18);
+    --border:rgba(225,29,72,.16);
+    --shadow:0 28px 80px rgba(190,18,60,.22);
 }
 
 *{
@@ -32,10 +33,13 @@ body{
     margin:0;
     display:grid;
     place-items:center;
+    overflow:hidden;
     padding:24px;
     color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-    background:linear-gradient(135deg,var(--bg-start) 0%,var(--bg-mid) 48%,var(--bg-end) 100%);
+    background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,.9) 0 12%, transparent 34%),
+        linear-gradient(135deg,var(--bg-one),var(--bg-two) 45%,var(--bg-three));
 }
 
 button{
@@ -46,8 +50,30 @@ button{
     display:none !important;
 }
 
-.page-shell{
-    width:min(100%,440px);
+.hearts{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    pointer-events:none;
+}
+
+.heart{
+    position:absolute;
+    color:rgba(225,29,72,.2);
+    font-size:clamp(22px,4vw,42px);
+    animation:float-heart 11s linear infinite;
+}
+
+.heart:nth-child(1){ left:8%; bottom:-12%; animation-delay:0s; }
+.heart:nth-child(2){ left:22%; bottom:-18%; animation-delay:2s; font-size:28px; }
+.heart:nth-child(3){ left:48%; bottom:-14%; animation-delay:4s; font-size:36px; }
+.heart:nth-child(4){ left:72%; bottom:-20%; animation-delay:1s; font-size:30px; }
+.heart:nth-child(5){ left:88%; bottom:-16%; animation-delay:5s; }
+
+.wrap{
+    position:relative;
+    z-index:1;
+    width:min(100%,520px);
 }
 
 .card{
@@ -55,38 +81,30 @@ button{
     overflow:hidden;
     border:1px solid var(--border);
     border-radius:8px;
-    background:rgba(255,255,255,.92);
-    box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.8);
-    backdrop-filter:blur(16px);
+    background:rgba(255,255,255,.9);
+    box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.9);
+    backdrop-filter:blur(18px);
     animation:card-in .45s ease both;
 }
 
-.card[data-status="success"]{
-    border-color:rgba(22,128,60,.3);
-}
-
-.card[data-status="fail"]{
-    border-color:rgba(180,35,24,.28);
-}
-
-.screen{
-    padding:34px 28px 30px;
+.card-inner{
+    padding:34px 30px 30px;
     text-align:center;
 }
 
-.eyebrow{
+.badge{
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    min-height:28px;
-    margin:0 0 14px;
-    padding:4px 10px;
-    border:1px solid rgba(255,122,24,.25);
+    min-height:30px;
+    margin-bottom:16px;
+    padding:5px 12px;
+    border:1px solid rgba(225,29,72,.18);
     border-radius:999px;
-    color:#9a3412;
-    background:#fff7ed;
+    color:#be123c;
+    background:#fff1f2;
     font-size:13px;
-    font-weight:700;
+    font-weight:800;
 }
 
 h1,
@@ -96,21 +114,23 @@ p{
 }
 
 h1{
-    font-size:clamp(32px,8vw,44px);
-    line-height:1.02;
+    max-width:10ch;
+    margin:0 auto;
+    font-size:clamp(34px,8vw,54px);
+    line-height:1;
     letter-spacing:0;
 }
 
 h2{
-    font-size:clamp(24px,6vw,32px);
+    font-size:clamp(25px,6vw,36px);
     line-height:1.12;
     letter-spacing:0;
 }
 
 .lede{
-    margin:14px auto 24px;
-    max-width:28ch;
-    color:var(--muted);
+    max-width:34ch;
+    margin:14px auto 26px;
+    color:var(--soft-text);
     font-size:16px;
     line-height:1.55;
 }
@@ -118,114 +138,166 @@ h2{
 .options{
     display:grid;
     gap:12px;
-    margin-top:24px;
+    margin-top:26px;
 }
 
-.button{
+.choice,
+.primary,
+.secondary{
     width:100%;
-    min-height:54px;
+    min-height:56px;
     border:1px solid transparent;
     border-radius:8px;
     padding:14px 18px;
     font-size:16px;
-    font-weight:750;
+    font-weight:800;
     cursor:pointer;
     transition:transform .16s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
 }
 
-.button:hover:not(:disabled){
+.choice:hover:not(:disabled),
+.primary:hover,
+.secondary:hover{
     transform:translateY(-1px);
 }
 
-.button:active:not(:disabled){
+.choice:active:not(:disabled),
+.primary:active,
+.secondary:active{
     transform:translateY(0) scale(.98);
 }
 
-.button:focus-visible{
-    outline:3px solid rgba(255,122,24,.35);
+.choice:focus-visible,
+.primary:focus-visible,
+.secondary:focus-visible{
+    outline:3px solid rgba(255,77,141,.3);
     outline-offset:3px;
 }
 
-.button:disabled{
+.choice:disabled{
     cursor:not-allowed;
-    opacity:.58;
 }
 
 .primary{
     color:#fff;
-    background:linear-gradient(135deg,var(--accent),var(--accent-strong));
-    box-shadow:0 12px 26px rgba(255,80,120,.32);
+    background:linear-gradient(135deg,var(--pink),var(--rose));
+    box-shadow:0 14px 30px rgba(225,29,72,.28);
 }
 
 .secondary{
-    margin-top:18px;
-    color:#172033;
+    margin-top:20px;
+    color:var(--rose);
     background:#fff;
-    border-color:var(--border);
+    border-color:rgba(225,29,72,.2);
 }
 
-.option{
-    color:#1e3a8a;
-    background:#eef4ff;
-    border-color:#d7e3ff;
+.choice{
+    color:#6d1239;
+    background:#fff7fb;
+    border-color:rgba(225,29,72,.14);
 }
 
-.option:hover:not(:disabled){
-    background:#e3ecff;
-    box-shadow:0 10px 20px rgba(30,58,138,.08);
+.choice:hover:not(:disabled){
+    background:#ffe4ef;
+    box-shadow:0 12px 24px rgba(225,29,72,.1);
 }
 
-.option.is-correct{
+.choice.is-right{
     color:var(--success);
     background:#ecfdf3;
-    border-color:rgba(22,128,60,.28);
+    border-color:rgba(17,130,59,.28);
 }
 
-.option.is-wrong{
+.choice.is-wrong{
     color:var(--fail);
     background:#fff1f0;
     border-color:rgba(180,35,24,.24);
 }
 
-.result{
-    min-height:28px;
-    margin-top:18px;
-    font-size:17px;
-    font-weight:750;
-    line-height:1.45;
-    transition:color .2s ease;
+.result-panel{
+    margin-top:24px;
+    padding:22px 18px;
+    border:1px solid rgba(225,29,72,.16);
+    border-radius:8px;
+    background:linear-gradient(180deg,#fff,#fff7fb);
+    animation:reveal .35s ease both;
 }
 
-.result:focus{
-    outline:none;
+.result-title{
+    font-size:20px;
+    font-weight:900;
+    line-height:1.25;
 }
 
-.success{
+.result-copy{
+    margin-top:9px;
+    color:var(--soft-text);
+    font-size:16px;
+    line-height:1.55;
+}
+
+.love-note{
+    margin-top:20px;
+    color:#be123c;
+    font-size:clamp(22px,5vw,30px);
+    font-weight:900;
+    line-height:1.18;
+}
+
+.big-heart{
+    display:block;
+    margin:18px auto 0;
+    width:96px;
+    height:96px;
+    color:var(--rose);
+    animation:heartbeat 1.05s ease-in-out infinite;
+    filter:drop-shadow(0 14px 20px rgba(225,29,72,.28));
+}
+
+.status-right{
     color:var(--success);
 }
 
-.fail{
+.status-wrong{
     color:var(--fail);
 }
 
 @keyframes card-in{
-    from{
-        opacity:0;
-        transform:translateY(18px) scale(.98);
-    }
-    to{
-        opacity:1;
-        transform:none;
-    }
+    from{ opacity:0; transform:translateY(18px) scale(.98); }
+    to{ opacity:1; transform:none; }
 }
 
-@media (max-width:420px){
+@keyframes reveal{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:none; }
+}
+
+@keyframes heartbeat{
+    0%,100%{ transform:scale(1); }
+    18%{ transform:scale(1.16); }
+    36%{ transform:scale(.96); }
+    54%{ transform:scale(1.12); }
+}
+
+@keyframes float-heart{
+    from{ transform:translateY(0) rotate(0deg); opacity:0; }
+    12%{ opacity:1; }
+    82%{ opacity:.8; }
+    to{ transform:translateY(-120vh) rotate(24deg); opacity:0; }
+}
+
+@media (max-width:440px){
     body{
         padding:16px;
     }
 
-    .screen{
+    .card-inner{
         padding:28px 20px 24px;
+    }
+
+    .big-heart{
+        width:82px;
+        height:82px;
     }
 }
 
@@ -243,89 +315,113 @@ h2{
 </head>
 
 <body>
-<main class="page-shell">
-    <article class="card" id="gameCard" aria-labelledby="gameTitle">
-        <section class="screen" id="startScreen">
-            <p class="eyebrow">Tiny game</p>
-            <h1 id="gameTitle">Baccha Check</h1>
-            <p class="lede">One question. One sweet answer. Choose carefully.</p>
-            <button class="button primary" id="startBtn" type="button">Start</button>
-        </section>
+<div class="hearts" aria-hidden="true">
+    <span class="heart">heart</span>
+    <span class="heart">heart</span>
+    <span class="heart">heart</span>
+    <span class="heart">heart</span>
+    <span class="heart">heart</span>
+</div>
 
-        <section class="screen" id="questionScreen" aria-labelledby="questionTitle" hidden>
-            <h2 id="questionTitle" tabindex="-1">Who is my baccha?</h2>
+<main class="wrap">
+    <article class="card" aria-labelledby="pageTitle">
+        <div class="card-inner">
+            <section id="startScreen">
+                <p class="badge">A very serious question</p>
+                <h1 id="pageTitle">Budi Quiz</h1>
+                <p class="lede">There are three choices, but only the heart knows the truth.</p>
+                <button class="primary" id="startBtn" type="button">Begin</button>
+            </section>
 
-            <div class="options" aria-label="Answer choices">
-                <button class="button option" type="button" data-answer="correct">Budbudiyu</button>
-                <button class="button option" type="button" data-answer="wrong">Me</button>
-            </div>
+            <section id="quizScreen" aria-labelledby="questionTitle" hidden>
+                <h2 id="questionTitle" tabindex="-1">Who is the most important woman in Dharmik Dave's life?</h2>
 
-            <p id="result" class="result" role="status" aria-live="polite" tabindex="-1"></p>
-            <button class="button secondary" id="resetBtn" type="button" hidden>Play again</button>
-        </section>
+                <div class="options" aria-label="Answer choices">
+                    <button class="choice" type="button" data-name="Budbudiyu" data-right="true">Budbudiyu</button>
+                    <button class="choice" type="button" data-name="Wifey" data-right="true">Wifey</button>
+                    <button class="choice" type="button" data-name="Himself" data-right="false">Himself</button>
+                </div>
+
+                <div class="result-panel" id="resultPanel" role="status" aria-live="polite" tabindex="-1" hidden>
+                    <p class="result-title" id="resultTitle"></p>
+                    <p class="result-copy" id="resultCopy"></p>
+                    <p class="love-note">Budi, I love you always and forever.</p>
+                    <svg class="big-heart" viewBox="0 0 100 92" role="img" aria-label="Beating heart">
+                        <path fill="currentColor" d="M50 86S8 61 8 29C8 13 20 4 33 4c8 0 14 4 17 10C53 8 59 4 67 4c13 0 25 9 25 25 0 32-42 57-42 57Z"/>
+                    </svg>
+                    <button class="secondary" id="againBtn" type="button">Play again</button>
+                </div>
+            </section>
+        </div>
     </article>
 </main>
 
 <script>
-const gameCard = document.getElementById("gameCard");
 const startScreen = document.getElementById("startScreen");
-const questionScreen = document.getElementById("questionScreen");
+const quizScreen = document.getElementById("quizScreen");
 const questionTitle = document.getElementById("questionTitle");
 const startBtn = document.getElementById("startBtn");
-const resetBtn = document.getElementById("resetBtn");
-const result = document.getElementById("result");
-const options = document.querySelectorAll(".option");
+const againBtn = document.getElementById("againBtn");
+const choices = document.querySelectorAll(".choice");
+const resultPanel = document.getElementById("resultPanel");
+const resultTitle = document.getElementById("resultTitle");
+const resultCopy = document.getElementById("resultCopy");
 
-function showQuestion(){
+const rightAnswers = ["Budbudiyu", "Wifey"];
+
+function showQuiz(){
     startScreen.hidden = true;
-    questionScreen.hidden = false;
+    quizScreen.hidden = false;
     questionTitle.focus({ preventScroll:true });
 }
 
-function clearChoices(){
-    options.forEach(option => {
-        option.disabled = false;
-        option.classList.remove("is-correct", "is-wrong");
+function resetQuiz(){
+    resultPanel.hidden = true;
+    resultTitle.textContent = "";
+    resultTitle.className = "result-title";
+    resultCopy.textContent = "";
+
+    choices.forEach(choice => {
+        choice.disabled = false;
+        choice.classList.remove("is-right", "is-wrong");
     });
+
+    questionTitle.focus({ preventScroll:true });
 }
 
-function resetGame(){
-    gameCard.removeAttribute("data-status");
-    result.textContent = "";
-    result.className = "result";
-    resetBtn.hidden = true;
-    clearChoices();
-    questionScreen.hidden = true;
-    startScreen.hidden = false;
-    startBtn.focus({ preventScroll:true });
-}
+function handleChoice(event){
+    const selected = event.currentTarget;
+    const selectedName = selected.dataset.name;
+    const isRight = selected.dataset.right === "true";
+    const otherRightAnswer = rightAnswers.find(answer => answer !== selectedName);
 
-function handleAnswer(event){
-    const selectedOption = event.currentTarget;
-    const isCorrect = selectedOption.dataset.answer === "correct";
+    choices.forEach(choice => {
+        choice.disabled = true;
 
-    selectedOption.classList.add(isCorrect ? "is-correct" : "is-wrong");
-    gameCard.dataset.status = isCorrect ? "success" : "fail";
-    result.className = "result " + (isCorrect ? "success" : "fail");
+        if(choice.dataset.right === "true"){
+            choice.classList.add("is-right");
+        }
+    });
 
-    if(isCorrect){
-        result.textContent = "Correct! Budbudiyu is the baccha.";
-        options.forEach(option => {
-            option.disabled = true;
-        });
-        resetBtn.hidden = false;
+    if(isRight){
+        resultTitle.textContent = "Right answer.";
+        resultTitle.classList.add("status-right");
+        resultCopy.textContent = `${selectedName} is correct. ${otherRightAnswer} was also a right answer, because both names belong to the same forever person.`;
     }else{
-        result.textContent = "Almost. Try the other answer.";
-        selectedOption.disabled = true;
+        selected.classList.add("is-wrong");
+        resultTitle.textContent = "Not this time.";
+        resultTitle.classList.add("status-wrong");
+        resultCopy.textContent = "The right answers are Budbudiyu and Wifey. Dharmik can be important, but Budi is the answer here.";
     }
 
-    result.focus({ preventScroll:true });
+    resultPanel.hidden = false;
+    resultPanel.focus({ preventScroll:true });
 }
 
-startBtn.addEventListener("click", showQuestion);
-resetBtn.addEventListener("click", resetGame);
-options.forEach(option => {
-    option.addEventListener("click", handleAnswer);
+startBtn.addEventListener("click", showQuiz);
+againBtn.addEventListener("click", resetQuiz);
+choices.forEach(choice => {
+    choice.addEventListener("click", handleChoice);
 });
 </script>
 </body>
